@@ -35,13 +35,16 @@ const katalonTest = test.extend({
 
     await page.locator('form').filter({ hasText: 'Login' }).getByRole('button', { name: 'Login' }).click();
 
-    await page.getByText('Logged in as Katalon').isVisible();
+    await expect(page.getByText('Logged in as Katalon')).toBeVisible();
     await use(page);
-  }
+  },
+  // logoutAction: async ({page}, use) => {
+  //   await page.getByRole('link', { name: ' Logout' }).click();
+  // }
 });
 
 // Tests
-test('exercice 1', async ({ page }) => {
+test.skip('exercice 1', async ({ page }) => {
   await page.goto('https://automationexercise.com');
   
   // Expect a title "to contain" a substring.
@@ -69,10 +72,12 @@ test('exercice 1', async ({ page }) => {
   await page.locator('form').filter({ hasText: 'Login' }).getByRole('button', { name: 'Login' }).click();
 
   // Expects to be logged in
-  await page.getByText('Logged in as Katalon').isVisible();
-
+  await expect(page.getByText('Logged in as Katalon')).toBeVisible();
+  
+  
   // Click the logout link.
   await page.getByRole('link', { name: ' Logout' }).click();
+  await expect(page.getByText('Logged in as Katalon')).toBeHidden();
 });
 
 katalonTest('exercice 1 bis', async ({ homePage }) => {
@@ -99,10 +104,11 @@ katalonTest('exercice 1 bis', async ({ homePage }) => {
   await homePage.locator('form').filter({ hasText: 'Login' }).getByRole('button', { name: 'Login' }).click();
 
   // Expects to be logged in
-  await homePage.getByText('Logged in as Katalon').isVisible();
-
+  await expect(homePage.getByText('Logged in as Katalon')).toBeVisible();
+  
   // Click the logout link.
   await homePage.getByRole('link', { name: ' Logout' }).click();
+  await expect(homePage.getByText('Logged in as Katalon')).toBeHidden();
 });
 
 katalonTest('exercice 2', async ({ loginPage }) => {
@@ -123,10 +129,31 @@ katalonTest('exercice 2', async ({ loginPage }) => {
   await loginPage.locator('form').filter({ hasText: 'Login' }).getByRole('button', { name: 'Login' }).click();
 
   // Expects login error
-  // await page.getByText('').isVisible();
-  await loginPage.locator('form').filter({ hasText: 'Login' }).getByText('Your email or password is incorrect!').isVisible();
+  await expect(loginPage.locator('form').filter({ hasText: 'Login' }).getByText('Your email or password is incorrect!')).toBeVisible();
 });
 
-katalonTest('exercice 3', async ({ authentifiedSessionPage }) => {
+katalonTest('exercice 3', async ({ authentifiedSessionPage: page }) => {
+  await page.getByRole('link', { name: ' Contact us' }).click();
+  await expect(page.getByRole('heading', { name: 'Contact Us' })).toBeVisible();
 
+  const inputLocator = page.locator('form').filter({ hasText: 'Submit' });
+  await inputLocator.getByPlaceholder('Email', { exact: true }).fill(process.env.USER_MAIL!);
+  await inputLocator.getByPlaceholder('Your Message Here').fill('Hello Contact');
+  
+  page.on('dialog', dialog => dialog.accept());
+  await inputLocator.getByRole('button', { name: 'Submit' }).click();
+
+  await expect(page.locator('#contact-page').getByText('Success! Your details have been submitted successfully.')).toBeVisible();
+
+  
+  // Click the logout link.
+  await page.getByRole('link', { name: ' Logout' }).click();
+  await expect(page.getByText('Logged in as Katalon')).toBeHidden();
+
+  // await inputUsername.fill(process.env.USER_MAIL!);
+  // getByRole('heading', { name: 'Get In Touch' })
+  // getByPlaceholder('Name')
+  // getByPlaceholder('Subject')
+  // getByPlaceholder('Your Message Here')
+  // getByRole('button', { name: 'Submit' })
 });
